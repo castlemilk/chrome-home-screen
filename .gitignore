@@ -1,0 +1,137 @@
+# Dependencies
+node_modules/
+/node_modules
+chrome-home-react/node_modules/
+
+# Build output
+dist/
+chrome-home-react/dist/
+build/
+*.zip
+chrome-extension.zip
+chrome-extension-*.zip
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Environment variables
+.env
+.env.local
+.env.production.local
+.env.development.local
+.env.test.local
+
+# Test coverage
+coverage/
+*.lcov
+.nyc_output/
+
+# Cache
+.cache/
+.eslintcache
+.parcel-cache/
+.next/
+.nuxt/
+.vuepress/dist/
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# Package manager
+.npm/
+.yarn/
+.pnpm-store/
+package-lock.json.backup
+yarn.lock.backup
+pnpm-lock.yaml.backup
+
+# TypeScript
+*.tsbuildinfo
+.tsc-cache/
+
+# Testing
+__tests__/
+.jest/
+.vitest/
+
+# Security - never commit these
+*.pem
+*.key
+*.cert
+*.crt
+private/
+secrets/
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# Python (for weather service if applicable)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Documentation build
+docs/_build/
+docs/.vitepress/dist/
+
+# Miscellaneous
+.history/
+.svn/
+*.pid
+*.seed
+*.pid.lock
+
+# Large unoptimized image files (use optimized versions instead)
+images/jwst/
+images/cache/
+images/jwst-optimized/
+
+# Image pipeline
+image-pipeline/bin/
+image-pipeline/output/
+image-pipeline/config.json
+image-pipeline/gcs-credentials.json
+
+# Optional - uncomment if you don't want to track lock files
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml

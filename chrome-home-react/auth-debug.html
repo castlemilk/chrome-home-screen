@@ -1,0 +1,41 @@
+<\!DOCTYPE html>
+<html>
+<head>
+    <title>Auth Debug</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #0f0;
+        }
+        button {
+            margin: 5px;
+            padding: 10px;
+            background: #333;
+            color: #0f0;
+            border: 1px solid #0f0;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #444;
+        }
+        pre {
+            background: #000;
+            padding: 10px;
+            border: 1px solid #0f0;
+            overflow: auto;
+            max-height: 500px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Extension Auth Debug</h1>
+    <button onclick="checkAuth()">Check Auth Status</button>
+    <button onclick="clearAuth()">Clear Auth & Re-register</button>
+    <button onclick="testBackend()">Test Backend Connection</button>
+    <pre id="output"></pre>
+    
+    <script src="auth-debug.js"></script>
+</body>
+</html>

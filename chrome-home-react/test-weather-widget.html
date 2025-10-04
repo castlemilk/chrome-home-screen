@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Weather Widget Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #2a2a2a;
+            border-radius: 8px;
+        }
+        pre {
+            background: #333;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            margin: 5px 0;
+        }
+        .success { background: #4CAF50; }
+        .error { background: #f44336; }
+        .warning { background: #ff9800; }
+    </style>
+</head>
+<body>
+    <h1>Weather Widget API Test</h1>
+    
+    <div class="test-section">
+        <h2>Current Weather Test</h2>
+        <div id="current-test"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Forecast Data Test</h2>
+        <div id="forecast-test"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Widget Parsing Test</h2>
+        <div id="widget-test"></div>
+    </div>
+
+    <script>
+        const API_URL = 'https://weather-service-fws6uj4tlq-uc.a.run.app';
+        const TEST_LAT = 37.7749;
+        const TEST_LON = -122.4194;
+        
+        async function testCurrentWeather() {
+            const container = document.getElementById('current-test');
+            try {
+                const response = await fetch(`${API_URL}/api/current?lat=${TEST_LAT}&lon=${TEST_LON}`);
+                const data = await response.json();
+                
+                container.innerHTML = `
+                    <div class="status success">✓ API Response OK</div>
+                    <h3>Current Conditions:</h3>
+                    <ul>
+                        <li>Temperature: ${data.temperature?.degrees}°C</li>
+                        <li>Feels Like: ${data.feelsLikeTemperature?.degrees}°C</li>
+                        <li>Condition: ${data.weatherCondition?.type}</li>
+                        <li>Humidity: ${data.relativeHumidity}%</li>
+                        <li>Wind: ${data.wind?.speed?.value} km/h ${data.wind?.direction?.cardinal}</li>
+                    </ul>
+                    <details>
+                        <summary>Raw Response</summary>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </details>
+                `;
+            } catch (error) {
+                container.innerHTML = `<div class="status error">✗ Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testForecast() {
+            const container = document.getElementById('forecast-test');
+            try {
+                const response = await fetch(`${API_URL}/api/weather?lat=${TEST_LAT}&lon=${TEST_LON}`);
+                const data = await response.json();
+                
+                const hourlyCount = data.forecast?.hourly?.length || 0;
+                const dailyCount = data.forecast?.daily?.length || 0;
+                
+                let html = `
+                    <div class="status ${hourlyCount > 0 ? 'success' : 'error'}">
+                        ${hourlyCount > 0 ? '✓' : '✗'} Hourly Forecast: ${hourlyCount} items
+                    </div>
+                    <div class="status ${dailyCount > 0 ? 'success' : 'error'}">
+                        ${dailyCount > 0 ? '✓' : '✗'} Daily Forecast: ${dailyCount} items
+                    </div>
+                `;
+                
+                if (hourlyCount > 0) {
+                    const first = data.forecast.hourly[0];
+                    html += `
+                        <h3>First Hourly Entry:</h3>
+                        <ul>
+                            <li>Time: ${new Date(first.timestamp).toLocaleTimeString()}</li>
+                            <li>Temperature: ${first.temperature?.degrees}°C</li>
+                            <li>Condition: ${first.weatherCondition?.type}</li>
+                            <li>Precipitation: ${first.precipitationProbability?.percent || 0}%</li>
+                        </ul>
+                    `;
+                }
+                
+                if (dailyCount > 0) {
+                    const first = data.forecast.daily[0];
+                    html += `
+                        <h3>First Daily Entry:</h3>
+                        <ul>
+                            <li>Date: ${first.date}</li>
+                            <li>High: ${first.maxTemperature?.degrees}°C</li>
+                            <li>Low: ${first.minTemperature?.degrees}°C</li>
+                            <li>Condition: ${first.weatherCondition?.type}</li>
+                        </ul>
+                    `;
+                }
+                
+                html += `
+                    <details>
+                        <summary>Raw Forecast Response</summary>
+                        <pre>${JSON.stringify(data.forecast, null, 2)}</pre>
+                    </details>
+                `;
+                
+                container.innerHTML = html;
+            } catch (error) {
+                container.innerHTML = `<div class="status error">✗ Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testWidgetParsing() {
+            const container = document.getElementById('widget-test');
+            try {
+                const response = await fetch(`${API_URL}/api/weather?lat=${TEST_LAT}&lon=${TEST_LON}`);
+                const data = await response.json();
+                
+                // Simulate widget parsing
+                const forecastData = data.forecast;
+                let hourly = [];
+                let daily = [];
+                
+                // Parse hourly like the widget does
+                if (forecastData?.hourly && Array.isArray(forecastData.hourly)) {
+                    const now = new Date();
+                    hourly = forecastData.hourly.slice(0, 24).map((hour) => {
+                        const date = new Date(hour.timestamp || hour.time);
+                        const hours = date.getHours();
+                        const isNow = Math.abs(date - now) < 3600000;
+                        
+                        return {
+                            time: isNow ? 'Now' : 
+                                  hours === 0 ? '12AM' : 
+                                  hours < 12 ? `${hours}AM` :
+                                  hours === 12 ? '12PM' :
+                                  `${hours - 12}PM`,
+                            temp: hour.temperature?.degrees ? Math.round(hour.temperature.degrees) : 0,
+                            condition: hour.weatherCondition?.type || 'CLEAR',
+                            precipitation: hour.precipitationProbability?.percent || 0,
+                        };
+                    });
+                }
+                
+                // Parse daily like the widget does
+                if (forecastData?.daily && Array.isArray(forecastData.daily)) {
+                    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                    daily = forecastData.daily.slice(0, 10).map((day, index) => {
+                        const date = new Date(day.date || day.timestamp);
+                        const dayName = index === 0 ? 'Today' : 
+                                       index === 1 ? 'Tomorrow' : 
+                                       dayNames[date.getDay()];
+                        
+                        return {
+                            name: dayName,
+                            high: day.maxTemperature?.degrees ? Math.round(day.maxTemperature.degrees) : 0,
+                            low: day.minTemperature?.degrees ? Math.round(day.minTemperature.degrees) : 0,
+                            condition: day.weatherCondition?.type || 'CLEAR',
+                        };
+                    });
+                }
+                
+                let html = `
+                    <div class="status ${hourly.length > 0 ? 'success' : 'error'}">
+                        ${hourly.length > 0 ? '✓' : '✗'} Widget Hourly Parse: ${hourly.length} items
+                    </div>
+                    <div class="status ${daily.length > 0 ? 'success' : 'error'}">
+                        ${daily.length > 0 ? '✓' : '✗'} Widget Daily Parse: ${daily.length} items
+                    </div>
+                `;
+                
+                if (hourly.length > 0) {
+                    html += `
+                        <h3>Parsed Hourly (first 5):</h3>
+                        <ul>
+                            ${hourly.slice(0, 5).map(h => 
+                                `<li>${h.time}: ${h.temp}°, ${h.condition}, ${h.precipitation}% rain</li>`
+                            ).join('')}
+                        </ul>
+                    `;
+                }
+                
+                if (daily.length > 0) {
+                    html += `
+                        <h3>Parsed Daily:</h3>
+                        <ul>
+                            ${daily.map(d => 
+                                `<li>${d.name}: ${d.high}°/${d.low}°, ${d.condition}</li>`
+                            ).join('')}
+                        </ul>
+                    `;
+                }
+                
+                container.innerHTML = html;
+            } catch (error) {
+                container.innerHTML = `<div class="status error">✗ Error: ${error.message}</div>`;
+            }
+        }
+        
+        // Run all tests
+        testCurrentWeather();
+        testForecast();
+        testWidgetParsing();
+    </script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Chrome Home Extension</title>
+    <meta name="description" content="Privacy Policy for Chrome Home extension. Learn how we protect your data and respect your privacy.">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .privacy-content {
+            max-width: 800px;
+            margin: 120px auto 80px;
+            padding: 0 20px;
+        }
+        .privacy-content h1 {
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+        .privacy-content h2 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+        .privacy-content p, .privacy-content li {
+            line-height: 1.8;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+        }
+        .privacy-content ul {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+        .last-updated {
+            color: var(--text-light);
+            font-style: italic;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-wrapper">
+                <a href="/" class="logo">
+                    <svg width="32" height="32" viewBox="0 0 128 128" fill="none">
+                        <rect width="128" height="128" rx="24" fill="url(#gradient)"/>
+                        <path d="M64 32L88 52V96H72V72H56V96H40V52L64 32Z" fill="white" opacity="0.9"/>
+                        <defs>
+                            <linearGradient id="gradient" x1="0" y1="0" x2="128" y2="128">
+                                <stop stop-color="#667eea"/>
+                                <stop offset="1" stop-color="#764ba2"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <span>Chrome Home</span>
+                </a>
+                <a href="/" class="cta-button secondary">Back to Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="privacy-content">
+        <h1>Privacy Policy</h1>
+        <p class="last-updated">Last updated: January 7, 2024</p>
+
+        <h2>Our Commitment to Privacy</h2>
+        <p>Chrome Home is committed to protecting your privacy. This privacy policy explains what information we collect (spoiler: almost none), how we use it, and your rights regarding your data.</p>
+
+        <h2>Information We DO NOT Collect</h2>
+        <p>Chrome Home is designed with privacy as a core principle. We DO NOT:</p>
+        <ul>
+            <li>Track your browsing activity</li>
+            <li>Collect personal information</li>
+            <li>Store data on external servers</li>
+            <li>Use analytics or tracking cookies</li>
+            <li>Require user accounts or registration</li>
+            <li>Share any data with third parties</li>
+            <li>Display advertisements</li>
+        </ul>
+
+        <h2>Data Storage</h2>
+        <p>All data is stored locally on your device using Chrome's storage API:</p>
+        <ul>
+            <li><strong>Settings:</strong> Your preferences (background choice, widget configuration) are stored locally</li>
+            <li><strong>Widget Data:</strong> Todo items, selected stocks, weather locations are stored locally</li>
+            <li><strong>Cache:</strong> API responses are cached locally to improve performance</li>
+        </ul>
+        <p>This data never leaves your device and is not accessible to us or any third party.</p>
+
+        <h2>API Connections</h2>
+        <p>Chrome Home connects to the following services only when specific widgets are used:</p>
+        <ul>
+            <li><strong>Weather Data:</strong> wttr.in (only when weather widget is active)</li>
+            <li><strong>Stock Data:</strong> Yahoo Finance API (only when stock widget is active)</li>
+            <li><strong>Location Search:</strong> Open-Meteo Geocoding (only during location search)</li>
+        </ul>
+        <p>These connections are made directly from your browser. We do not proxy or store these requests.</p>
+
+        <h2>Permissions</h2>
+        <p>Chrome Home requires minimal permissions:</p>
+        <ul>
+            <li><strong>Storage:</strong> To save your settings and widget data locally</li>
+            <li><strong>Host Permissions:</strong> To fetch weather and stock data when widgets are used</li>
+        </ul>
+
+        <h2>Data Security</h2>
+        <p>Your data security is ensured through:</p>
+        <ul>
+            <li>All data stored locally on your device</li>
+            <li>No external server communication for user data</li>
+            <li>Open source code for complete transparency</li>
+            <li>Regular security updates</li>
+        </ul>
+
+        <h2>Your Rights</h2>
+        <p>You have complete control over your data:</p>
+        <ul>
+            <li><strong>Access:</strong> All your data is stored locally and accessible through the extension</li>
+            <li><strong>Modification:</strong> Change any settings or data at any time</li>
+            <li><strong>Deletion:</strong> Uninstalling the extension removes all associated data</li>
+            <li><strong>Portability:</strong> Export your data through Chrome's sync feature</li>
+        </ul>
+
+        <h2>Children's Privacy</h2>
+        <p>Chrome Home does not collect any information from anyone, including children under 13.</p>
+
+        <h2>Changes to This Policy</h2>
+        <p>We may update this privacy policy from time to time. Any changes will be reflected on this page with an updated revision date.</p>
+
+        <h2>Open Source</h2>
+        <p>Chrome Home is open source. You can review our code at any time on <a href="https://github.com/yourusername/chrome-home" target="_blank">GitHub</a> to verify our privacy practices.</p>
+
+        <h2>Contact Us</h2>
+        <p>If you have any questions about this privacy policy or Chrome Home's privacy practices, please contact us:</p>
+        <ul>
+            <li>Email: privacy@chromehome.app</li>
+            <li>GitHub Issues: <a href="https://github.com/yourusername/chrome-home/issues" target="_blank">Report an Issue</a></li>
+        </ul>
+
+        <h2>Compliance</h2>
+        <p>Chrome Home complies with:</p>
+        <ul>
+            <li>Chrome Web Store Developer Program Policies</li>
+            <li>General Data Protection Regulation (GDPR)</li>
+            <li>California Consumer Privacy Act (CCPA)</li>
+        </ul>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2024 Chrome Home. Made with ❤️ by Ben Ebsworth</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

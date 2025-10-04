@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Grid Layout Resize Debug</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            padding: 20px;
+        }
+        .debug-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #444;
+            border-radius: 8px;
+        }
+        .highlight {
+            background: yellow;
+            color: black;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        code {
+            background: #333;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>React Grid Layout Resize Handles Debug Report</h1>
+    
+    <div class="debug-section">
+        <h2>Issue Analysis</h2>
+        <p>Based on the code analysis, several potential issues were identified:</p>
+        <ul>
+            <li><span class="highlight">draggableHandle prop conflict:</span> The <code>draggableHandle=".drag-handle"</code> prop may interfere with resize handles</li>
+            <li><span class="highlight">Custom CSS overrides:</span> Custom styles in index.css override default resize handle styles</li>
+            <li><span class="highlight">Z-index issues:</span> Resize handles may be hidden behind other elements</li>
+            <li><span class="highlight">CSS opacity:</span> Resize handles are hidden by default with opacity: 0</li>
+        </ul>
+    </div>
+
+    <div class="debug-section">
+        <h2>Key Configuration</h2>
+        <pre><code>
+&lt;ResponsiveGridLayout
+  isDraggable={editMode}         ✅ Correct
+  isResizable={editMode}         ✅ Correct
+  draggableHandle=".drag-handle" ⚠️  Potential issue
+  // No resizeHandle prop set    ⚠️  May need explicit setting
+/&gt;
+        </code></pre>
+    </div>
+
+    <div class="debug-section">
+        <h2>CSS Issues Found</h2>
+        <p>In <code>src/index.css</code>, line 3046:</p>
+        <pre><code>
+.app.edit-mode .react-grid-item > .react-resizable-handle::after {
+  opacity: 1;  /* Only visible in edit mode */
+}
+        </code></pre>
+        <p>This means resize handles are invisible unless explicitly in edit mode.</p>
+    </div>
+
+    <div class="debug-section">
+        <h2>Recommended Fixes</h2>
+        <ol>
+            <li><strong>Remove draggableHandle restriction for widgets</strong> - Only apply it to core elements</li>
+            <li><strong>Add explicit resizeHandle prop</strong> to allow default resize handles</li>
+            <li><strong>Verify CSS z-index values</strong> for resize handles</li>
+            <li><strong>Test resize handle visibility</strong> in edit mode</li>
+        </ol>
+    </div>
+
+    <script>
+        console.log("Debug page loaded. Check the main application at http://localhost:5175");
+        
+        // Instructions for manual testing
+        console.log(`
+Manual Testing Steps:
+1. Open http://localhost:5175
+2. Enable edit mode by clicking the grid icon
+3. Add a widget from the marketplace
+4. Inspect the widget element in dev tools
+5. Look for .react-resizable-handle elements
+6. Check if they are visible and have proper cursor styles
+7. Try to resize by dragging the bottom-right corner
+        `);
+    </script>
+</body>
+</html>

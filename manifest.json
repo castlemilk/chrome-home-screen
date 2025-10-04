@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Beautiful Home Screen",
+  "version": "1.0",
+  "description": "A customizable and beautiful home screen for your browser",
+  "chrome_url_overrides": {
+    "newtab": "chrome-home-react/dist/index.html"
+  },
+  "permissions": [
+    "storage",
+    "search"
+  ],
+  "host_permissions": [
+    "https://query1.finance.yahoo.com/*",
+    "https://query2.finance.yahoo.com/*",
+    "https://finnhub.io/*",
+    "https://api.openweathermap.org/*",
+    "https://geocoding-api.open-meteo.com/*",
+    "https://wttr.in/*",
+    "https://openrouter.ai/*"
+  ]
+}
