@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { X, Image, Plus, Cloud } from 'lucide-react'
+import { X, Image, Plus } from 'lucide-react'
 import { useSettings } from '../contexts/SettingsContext'
 import { useWidgets } from '../contexts/WidgetContext'
 import { useState, useEffect } from 'react'
@@ -188,26 +188,23 @@ const SettingsPanel = ({ onClose }) => {
                 </div>
 
                 <div className="background-section">
-                  <h4 className="background-section-title">
-                    <Cloud size={18} style={{ display: 'inline', marginRight: '8px' }} />
-                    Cloud Images (GCS)
-                  </h4>
+                  <h4 className="background-section-title">NASA Webb Images</h4>
                   {gcsLoading ? (
                     <div style={{ padding: '2rem', textAlign: 'center', color: 'rgba(255,255,255,0.6)' }}>
-                      Loading images from cloud...
+                      Loading images...
                     </div>
                   ) : gcsImages.length > 0 ? (
                     <div className="background-grid image-grid">
                       {gcsImages.map((image) => (
                         <div
                           key={image.id}
-                          className={`background-option ${settings.backgroundType === 'image' && settings.background === image.id && settings.backgroundSource === 'gcs' ? 'active' : ''}`}
+                          className={`background-option ${settings.backgroundType === 'image' && settings.background === image.id ? 'active' : ''}`}
                           onClick={() => handleBackgroundChange('image', image.id, null, 'gcs')}
                         >
                           <div className="background-preview image-preview">
                             <img src={image.thumbnail} alt={image.name} loading="lazy" />
                             <div className="image-icon">
-                              <Cloud size={16} />
+                              <Image size={16} />
                             </div>
                           </div>
                           <span className="background-name">{image.name}</span>
@@ -216,30 +213,9 @@ const SettingsPanel = ({ onClose }) => {
                     </div>
                   ) : (
                     <div style={{ padding: '2rem', textAlign: 'center', color: 'rgba(255,255,255,0.6)' }}>
-                      No cloud images available. Run: make deploy
+                      No images available
                     </div>
                   )}
-                </div>
-
-                <div className="background-section">
-                  <h4 className="background-section-title">NASA Webb Images (Local)</h4>
-                  <div className="background-grid image-grid">
-                    {jwstImages.map((image) => (
-                      <div
-                        key={image.file}
-                        className={`background-option ${settings.backgroundType === 'image' && settings.background === image.file && settings.backgroundSource !== 'gcs' ? 'active' : ''}`}
-                        onClick={() => handleBackgroundChange('image', image.file, null, 'local')}
-                      >
-                        <div className="background-preview image-preview">
-                          <img src={`/images/jwst-optimized/${image.file}`} alt={image.name} loading="lazy" />
-                          <div className="image-icon">
-                            <Image size={16} />
-                          </div>
-                        </div>
-                        <span className="background-name">{image.name}</span>
-                      </div>
-                    ))}
-                  </div>
                 </div>
 
                 <div className="background-section">

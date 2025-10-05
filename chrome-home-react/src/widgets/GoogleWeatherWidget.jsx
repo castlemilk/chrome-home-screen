@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { 
   Sun, Cloud, CloudRain, CloudSnow, CloudLightning, CloudDrizzle, 
   CloudFog, Wind, Droplets, MapPin, Thermometer, Eye, Gauge,
@@ -21,7 +21,7 @@ const GoogleWeatherWidget = ({ config, onConfigUpdate, isConfigMode }) => {
   const [expandedView, setExpandedView] = useState(false)
   const [expandedDay, setExpandedDay] = useState(null) // Only one day can be expanded
   const [expandedHours, setExpandedHours] = useState(new Set())
-  const [lastRefresh, setLastRefresh] = useState(null)
+  const [setLastRefresh] = useState(null)
   const hourlyScrollRef = useRef(null)
   const isGeocodingRef = useRef(false)
   const widgetContainerRef = useRef(null)
@@ -262,9 +262,6 @@ const GoogleWeatherWidget = ({ config, onConfigUpdate, isConfigMode }) => {
     try {
       setLoading(true)
       
-      // Create cache key based on location
-      const locationKey = `weather_${config.placeId || `${config.lat}_${config.lon}`}`
-      
       // Check cache first - request only next 24 hours for hourly forecast
       const weatherUrl = buildApiUrl('weather', { 
         lat: config.lat, 
@@ -326,7 +323,7 @@ const GoogleWeatherWidget = ({ config, onConfigUpdate, isConfigMode }) => {
         // Filter and process only future hours (from now to next 24 hours)
         const currentHour = now.getHours()
         const futureHours = forecastData.hourly
-          .map((hour, index) => {
+          .map((hour) => {
             const date = new Date(hour.timestamp || hour.time)
             return {
               ...hour,
@@ -336,7 +333,6 @@ const GoogleWeatherWidget = ({ config, onConfigUpdate, isConfigMode }) => {
           })
           .filter(hour => {
             // Include current hour and all future hours within next 24 hours
-            const hourDate = new Date(hour.timestamp)
             return hour.timestamp >= currentTime - 3600000 && hour.timestamp <= next24Hours
           })
           .sort((a, b) => a.timestamp - b.timestamp) // Sort chronologically
@@ -495,7 +491,7 @@ const GoogleWeatherWidget = ({ config, onConfigUpdate, isConfigMode }) => {
         } else {
           throw new Error('Fallback failed')
         }
-      } catch (fallbackError) {
+      } catch {
         setWeather({
           location: config.location || 'Unknown Location',
           lastUpdated: new Date(), // Error state timestamp
@@ -590,28 +586,6 @@ const GoogleWeatherWidget = ({ config, onConfigUpdate, isConfigMode }) => {
       minute: '2-digit',
       hour12: true 
     })
-  }
-
-  // Get moon phase icon
-  const getMoonPhaseIcon = (phase) => {
-    if (!phase) return '🌑'
-    if (phase === 'NEW') return '🌑'
-    if (phase === 'WAXING_CRESCENT') return '🌒'
-    if (phase === 'FIRST_QUARTER') return '🌓'
-    if (phase === 'WAXING_GIBBOUS') return '🌔'
-    if (phase === 'FULL') return '🌕'
-    if (phase === 'WANING_GIBBOUS') return '🌖'
-    if (phase === 'LAST_QUARTER') return '🌗'
-    if (phase === 'WANING_CRESCENT') return '🌘'
-    return '🌑'
-  }
-
-  // Get wind direction
-  const getWindDirection = (degrees) => {
-    if (!degrees && degrees !== 0) return ''
-    const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
-    const index = Math.round((degrees % 360) / 45)
-    return directions[index % 8]
   }
 
   // Force refresh weather data
@@ -907,7 +881,6 @@ const GoogleWeatherWidget = ({ config, onConfigUpdate, isConfigMode }) => {
                         className={`hourly-item ${hour.isNow ? 'hourly-now' : ''} ${isExpanded ? 'expanded' : ''}`}
                         onClick={(e) => {
                           e.stopPropagation()
-                          console.log('Hour clicked:', index)
                           toggleHourExpanded(index)
                         }}
                         style={{ cursor: 'pointer' }}
