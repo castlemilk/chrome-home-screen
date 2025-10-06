@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Chrome Home - Beautiful New Tab",
   "short_name": "Chrome Home",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Beautiful new tab page with customizable widgets and NASA space backgrounds",
   "author": "Ben Ebsworth",
   "homepage_url": "https://github.com/yourusername/chrome-home-extension",
