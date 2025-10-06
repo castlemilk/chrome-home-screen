@@ -1,6 +1,7 @@
-.PHONY: help build dev clean lint test reload-extension install zip package release
+.PHONY: help build dev clean lint test reload-extension install zip package release version bump-major bump-minor bump-patch tag
 
-VERSION := $(shell node -p "require('./package.json').version")
+# Get version from git tag, fallback to package.json
+VERSION := $(shell git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || node -p "require('./package.json').version")
 PACKAGE_NAME := chrome-home-extension-v$(VERSION).zip
 
 help: ## Show this help message
@@ -12,7 +13,12 @@ help: ## Show this help message
 install: ## Install dependencies
 	npm install
 
-build: ## Build the extension for production
+icons: ## Generate PNG icons from SVG
+	@echo "🎨 Converting SVG icons to PNG..."
+	node scripts/convert-icons-to-png.js
+	@echo "✅ Icons ready!"
+
+build: icons ## Build the extension for production
 	npm run build
 
 dev: ## Start development server
@@ -95,5 +101,33 @@ verify-package: package ## Create package and show contents
 	@echo ""
 	@echo "📦 Package size:"
 	@ls -lh $(PACKAGE_NAME)
+
+version: ## Show current version from git tag
+	@echo "Current version: v$(VERSION)"
+	@echo "Git tag: $$(git describe --tags --abbrev=0 2>/dev/null || echo 'No tags found')"
+	@echo "Package.json: $$(node -p "require('./package.json').version")"
+
+bump-patch: ## Bump patch version (x.x.X)
+	@echo "🔼 Bumping patch version..."
+	@node scripts/bump-version.js patch
+
+bump-minor: ## Bump minor version (x.X.0)
+	@echo "🔼 Bumping minor version..."
+	@node scripts/bump-version.js minor
+
+bump-major: ## Bump major version (X.0.0)
+	@echo "🔼 Bumping major version..."
+	@node scripts/bump-version.js major
+
+tag: ## Create git tag for current version
+	@VERSION=$$(node scripts/get-version.js); \
+	echo "🏷️  Creating tag v$$VERSION..."; \
+	git add package.json public/manifest.json package-lock.json; \
+	git commit -m "Bump version to $$VERSION" || true; \
+	git tag -a "v$$VERSION" -m "Release v$$VERSION"; \
+	echo "✅ Created tag v$$VERSION"; \
+	echo ""; \
+	echo "📤 To push:"; \
+	echo "   git push && git push --tags"
 
 .DEFAULT_GOAL := help

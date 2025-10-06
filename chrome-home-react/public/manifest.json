@@ -7,16 +7,16 @@
   "author": "Ben Ebsworth",
   "homepage_url": "https://github.com/yourusername/chrome-home-extension",
   "icons": {
-    "16": "icons/icon16.svg",
-    "48": "icons/icon48.svg",
-    "128": "icons/icon128.svg"
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
   },
   "action": {
     "default_title": "Chrome Home Extension",
     "default_icon": {
-      "16": "icons/icon16.svg",
-      "48": "icons/icon48.svg",
-      "128": "icons/icon128.svg"
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
     }
   },
   "chrome_url_overrides": {
@@ -26,7 +26,10 @@
     "service_worker": "background.js",
     "type": "module"
   },
-  "permissions": ["storage", "search"],
+  "permissions": [
+    "storage",
+    "search"
+  ],
   "host_permissions": [
     "https://query1.finance.yahoo.com/*",
     "https://query2.finance.yahoo.com/*",

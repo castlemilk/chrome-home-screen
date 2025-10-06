@@ -8,7 +8,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && npm run build:manifest",
+    "icons": "node scripts/convert-icons-to-png.js",
+    "build": "npm run icons && vite build && npm run build:manifest",
     "build:manifest": "node scripts/validate-manifest.js",
     "build:prod": "npm run clean && npm run build && npm run zip",
     "clean": "rm -rf dist build chrome-extension.zip",
@@ -23,6 +24,10 @@
     "zip": "cd dist && zip -r ../chrome-extension.zip . && cd ..",
     "release": "npm run build:prod && node scripts/prepare-release.js",
     "check": "npm run lint && npm run format:check && npm run test -- --run",
+    "version": "node scripts/get-version.js",
+    "bump:patch": "node scripts/bump-version.js patch",
+    "bump:minor": "node scripts/bump-version.js minor",
+    "bump:major": "node scripts/bump-version.js major",
     "prepare": "husky"
   },
   "dependencies": {
@@ -78,6 +83,7 @@
     "jsdom": "^26.1.0",
     "lint-staged": "^16.1.4",
     "prettier": "^3.6.2",
+    "sharp": "^0.34.4",
     "vite": "^7.0.4",
     "vitest": "^3.2.4"
   },

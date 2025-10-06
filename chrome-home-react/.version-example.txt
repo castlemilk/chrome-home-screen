@@ -1,0 +1,53 @@
+# Version & Release System - Example Usage
+
+## Current Setup
+- Git tag: v0.1.0 (source of truth for package naming)
+- Package.json: 1.0.0
+- Package name: chrome-home-extension-v0.1.0.zip
+
+## How to Release Next Version
+
+### Option 1: Patch Release (0.1.0 → 0.1.1)
+For bug fixes:
+```bash
+make bump-patch
+make tag
+git push --tags
+make release
+# Creates: chrome-home-extension-v0.1.1.zip
+```
+
+### Option 2: Minor Release (0.1.0 → 0.2.0)
+For new features:
+```bash
+make bump-minor
+make tag
+git push --tags
+make release
+# Creates: chrome-home-extension-v0.2.0.zip
+```
+
+### Option 3: Major Release (0.1.0 → 1.0.0)
+For breaking changes or official release:
+```bash
+make bump-major
+make tag
+git push --tags
+make release
+# Creates: chrome-home-extension-v1.0.0.zip
+```
+
+## What Each Command Does
+
+1. `make bump-*`: Updates version in package.json and manifest.json
+2. `make tag`: Creates annotated git tag and commits version files
+3. `git push --tags`: Pushes tag to remote repository
+4. `make release`: Builds extension and creates versioned zip file
+
+## Benefits
+
+✅ Git tag determines package name (single source of truth)
+✅ Semantic versioning (semver) enforced
+✅ Automatic version synchronization across files
+✅ Clear release history via git tags
+✅ No manual editing of version numbers
