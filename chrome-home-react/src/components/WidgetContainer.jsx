@@ -8,6 +8,7 @@ import TodoWidget from '../widgets/TodoWidget'
 import CalendarWidget from '../widgets/CalendarWidget'
 import NewsWidget from '../widgets/NewsWidget'
 import SearchHistoryWidget from '../widgets/SearchHistoryWidget'
+import GoogleAppsWidget from '../widgets/GoogleAppsWidget'
 
 const WIDGET_COMPONENTS = {
   'weather': GoogleWeatherWidget,
@@ -16,7 +17,8 @@ const WIDGET_COMPONENTS = {
   'todo': TodoWidget,
   'calendar': CalendarWidget,
   'news': NewsWidget,
-  'search-history': SearchHistoryWidget
+  'search-history': SearchHistoryWidget,
+  'google-apps': GoogleAppsWidget
 }
 
 const WidgetContainer = ({ widget, onRemove, onConfigUpdate, editMode, onChatHistoryClick }) => {

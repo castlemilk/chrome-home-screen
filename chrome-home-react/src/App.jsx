@@ -1,4 +1,7 @@
+/* global chrome */
+
 import { useState, useEffect, useRef } from 'react'
+// eslint-disable-next-line no-unused-vars
 import { AnimatePresence, motion } from 'framer-motion'
 import { Settings, Move } from 'lucide-react'
 import { Responsive, WidthProvider } from 'react-grid-layout'
@@ -15,6 +18,7 @@ import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
 
 // Available widget types
+// eslint-disable-next-line react-refresh/only-export-components
 export const WIDGET_TYPES = {
   WEATHER: {
     id: 'weather',
@@ -154,6 +158,23 @@ export const WIDGET_TYPES = {
       xs: { w: 1, h: 2 },
       xxs: { w: 1, h: 2 }
     }
+  },
+  GOOGLE_APPS: {
+    id: 'google-apps',
+    name: 'Google Apps',
+    description: 'Quick access to Google services',
+    icon: '🎯',
+    defaultConfig: {},
+    defaultSize: { w: 3, h: 4 },
+    minSize: { w: 2, h: 3 },
+    responsiveMinSize: {
+      xl: { w: 3, h: 4 },
+      lg: { w: 3, h: 4 },
+      md: { w: 2, h: 3 },
+      sm: { w: 2, h: 3 },
+      xs: { w: 2, h: 3 },
+      xxs: { w: 2, h: 3 }
+    }
   }
 }
 
@@ -197,6 +218,7 @@ function App() {
   const [widgets, setWidgets] = useState([])
   const [layouts, setLayouts] = useState(defaultLayouts)
   const [showSettings, setShowSettings] = useState(false)
+  const [settingsTab, setSettingsTab] = useState('appearance')
   const [isDragging, setIsDragging] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [windowWidth, setWindowWidth] = useState(window.innerWidth)
@@ -224,6 +246,7 @@ function App() {
     }
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [windowHeight])
   
   // Add keyboard shortcut for resetting layouts (Ctrl/Cmd + Shift + R)
@@ -237,17 +260,44 @@ function App() {
     }
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [widgets])
+  
+  // Listen for messages from popup
+  useEffect(() => {
+    const handleMessage = (request, sender, sendResponse) => {
+      if (request.action === 'openSettings') {
+        // Set the tab if specified, otherwise default to appearance
+        if (request.tab) {
+          setSettingsTab(request.tab)
+        }
+        setShowSettings(true)
+        sendResponse({ success: true })
+      } else if (request.action === 'refreshAll') {
+        // Trigger refresh for all widgets
+        window.location.reload()
+        sendResponse({ success: true })
+      }
+      return true // Keep the message channel open for async response
+    }
+    
+    // Only add listener if chrome.runtime is available
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
+      chrome.runtime.onMessage.addListener(handleMessage)
+      return () => {
+        chrome.runtime.onMessage.removeListener(handleMessage)
+      }
+    }
+  }, [])
 
   // Function to auto-arrange widgets like Lego blocks for each breakpoint
   const autoArrangeWidgets = (widgetIds, breakpoint) => {
-    const coreItemIds = ['time-display', 'greeting', 'search-bar']
-    
     // Get grid configuration for this breakpoint
     const cols = { xl: 12, lg: 12, md: 8, sm: 6, xs: 4, xxs: 2 }[breakpoint]
     
-    // Start placing widgets after core UI elements, but try to place first widgets alongside search
-    const startY = 3 // Same row as search bar
+    // Start placing widgets BELOW core UI elements (not alongside search)
+    // This ensures widgets are independent of search bar sizing
+    const startY = 4 // Below search bar (search bar ends at y=3)
     const arrangements = []
     
     // Get default layout for core items
@@ -263,8 +313,8 @@ function App() {
       }
     })
     
-    // For each widget, find best position
-    widgetIds.forEach((widgetId, index) => {
+    // For each widget, find best position (starting from below core UI)
+    widgetIds.forEach((widgetId) => {
       const widgetType = Object.values(WIDGET_TYPES).find(type => 
         widgetId.startsWith(type.id + '-')
       )
@@ -277,20 +327,18 @@ function App() {
       
       if (breakpoint === 'xxs') {
         w = 2 // Full width on mobile
-        // Increase height on mobile to maintain content visibility
         h = Math.ceil(baseHeight * 1.2)
       } else if (breakpoint === 'xs') {
         w = 4 // Full width on xs
-        // Slightly increase height to compensate for narrower width
         h = Math.ceil(baseHeight * 1.1)
       } else if (breakpoint === 'sm') {
-        w = Math.min(widgetType.defaultSize?.w || 3, 3) // Half width or less
+        w = Math.min(widgetType.defaultSize?.w || 3, 3)
         h = baseHeight
       } else if (breakpoint === 'md') {
-        w = Math.min(widgetType.defaultSize?.w || 4, 3) // Narrower to fit alongside search
+        w = Math.min(widgetType.defaultSize?.w || 4, 4)
         h = baseHeight
       } else {
-        // lg and xl - use default sizes but limit width to fit alongside search
+        // lg and xl - use default sizes
         w = Math.min(widgetType.defaultSize?.w || 4, 4)
         h = baseHeight
       }
@@ -302,104 +350,39 @@ function App() {
       // Ensure w doesn't exceed cols
       w = Math.min(w, cols)
       
-      // For the first two widgets on larger screens, try to place them alongside search bar
-      let preferredStartY = startY
-      let preferredStartX = 0
-      
-      if ((breakpoint === 'xl' || breakpoint === 'lg') && index < 2) {
-        // Try to place first widget to the left of search, second to the right
-        if (index === 0) {
-          preferredStartX = 0 // Left side
-          preferredStartY = 3 // Same row as search
-          w = Math.min(w, 4) // Limit width
-        } else if (index === 1) {
-          preferredStartX = 8 // Right side
-          preferredStartY = 3 // Same row as search
-          w = Math.min(w, 4) // Limit width
-        }
-      } else if (breakpoint === 'md' && index < 2) {
-        // For medium screens, try to place alongside but may need to go below
-        if (index === 0) {
-          preferredStartX = 0 // Left side
-          preferredStartY = 3
-          w = Math.min(w, 2)
-        } else if (index === 1) {
-          preferredStartX = 6 // Right side
-          preferredStartY = 3
-          w = Math.min(w, 2)
-        }
-      }
-      
-      // Find first available position that fits
+      // Find first available position starting from below core UI
       let placed = false
-      
-      // First try the preferred position
-      if (preferredStartX >= 0 && preferredStartX + w <= cols) {
-        let canPlace = true
-        for (let dx = 0; dx < w && canPlace; dx++) {
-          for (let dy = 0; dy < h && canPlace; dy++) {
-            if (occupied.has(`${preferredStartX + dx},${preferredStartY + dy}`)) {
-              canPlace = false
-            }
-          }
-        }
-        
-        if (canPlace) {
-          // Mark as occupied
-          for (let dx = 0; dx < w; dx++) {
-            for (let dy = 0; dy < h; dy++) {
-              occupied.add(`${preferredStartX + dx},${preferredStartY + dy}`)
+      for (let y = startY; y < startY + 50 && !placed; y++) {
+        for (let x = 0; x <= cols - w && !placed; x++) {
+          // Check if this position is free
+          let canPlace = true
+          for (let dx = 0; dx < w && canPlace; dx++) {
+            for (let dy = 0; dy < h && canPlace; dy++) {
+              if (occupied.has(`${x + dx},${y + dy}`)) {
+                canPlace = false
+              }
             }
           }
           
-          arrangements.push({
-            i: widgetId,
-            x: preferredStartX,
-            y: preferredStartY,
-            w: w,
-            h: h,
-            minW: widgetType.responsiveMinSize?.[breakpoint]?.w || widgetType.minSize?.w || 2,
-            minH: widgetType.responsiveMinSize?.[breakpoint]?.h || widgetType.minSize?.h || 3,
-            maxW: cols
-          })
-          placed = true
-        }
-      }
-      
-      // If preferred position didn't work, fall back to normal placement
-      if (!placed) {
-        for (let y = startY; y < startY + 50 && !placed; y++) {
-          for (let x = 0; x <= cols - w && !placed; x++) {
-            // Check if this position is free
-            let canPlace = true
-            for (let dx = 0; dx < w && canPlace; dx++) {
-              for (let dy = 0; dy < h && canPlace; dy++) {
-                if (occupied.has(`${x + dx},${y + dy}`)) {
-                  canPlace = false
-                }
+          if (canPlace) {
+            // Mark as occupied
+            for (let dx = 0; dx < w; dx++) {
+              for (let dy = 0; dy < h; dy++) {
+                occupied.add(`${x + dx},${y + dy}`)
               }
             }
             
-            if (canPlace) {
-              // Mark as occupied
-              for (let dx = 0; dx < w; dx++) {
-                for (let dy = 0; dy < h; dy++) {
-                  occupied.add(`${x + dx},${y + dy}`)
-                }
-              }
-              
-              arrangements.push({
-                i: widgetId,
-                x: x,
-                y: y,
-                w: w,
-                h: h,
-                minW: widgetType.responsiveMinSize?.[breakpoint]?.w || widgetType.minSize?.w || 2,
-                minH: widgetType.responsiveMinSize?.[breakpoint]?.h || widgetType.minSize?.h || 3,
-                maxW: cols
-              })
-              placed = true
-            }
+            arrangements.push({
+              i: widgetId,
+              x: x,
+              y: y,
+              w: w,
+              h: h,
+              minW: widgetType.responsiveMinSize?.[breakpoint]?.w || widgetType.minSize?.w || 2,
+              minH: widgetType.responsiveMinSize?.[breakpoint]?.h || widgetType.minSize?.h || 3,
+              maxW: cols
+            })
+            placed = true
           }
         }
       }
@@ -440,6 +423,19 @@ function App() {
         setLayouts(defaultLayouts)
       }
     })
+    
+    // Check if popup requested to open settings
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get(['openSettingsOnLoad', 'settingsTab'], (result) => {
+        if (result.openSettingsOnLoad) {
+          setSettingsTab(result.settingsTab || 'appearance')
+          setShowSettings(true)
+          // Clear the flag
+          chrome.storage.local.remove(['openSettingsOnLoad', 'settingsTab'])
+        }
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Save widgets and layouts to storage
@@ -451,8 +447,8 @@ function App() {
 
   // Helper function to find next available position
   const findNextAvailablePosition = (layout, cols, w, h) => {
-    // Start after core UI elements (they occupy y: 0-4)
-    let startY = 5
+    // Start after core UI elements (they occupy y: 0-3, search bar is at y=3 with h=1)
+    let startY = 4
     
     // Try to find a position starting from top-right area, then moving across and down
     const maxY = Math.max(startY, layout.reduce((max, item) => Math.max(max, item.y + item.h), startY))
@@ -505,8 +501,60 @@ function App() {
     const updatedWidgets = [...widgets, newWidget]
     setWidgets(updatedWidgets)
     
-    // Rebuild all layouts with the new widget
-    const newLayouts = rebuildLayouts(updatedWidgets)
+    // Instead of rebuilding all layouts, only add layout for the new widget
+    // Preserve existing layouts and only calculate position for new widget
+    const newLayouts = {}
+    const breakpoints = ['xl', 'lg', 'md', 'sm', 'xs', 'xxs']
+    const cols = { xl: 12, lg: 12, md: 8, sm: 6, xs: 4, xxs: 2 }
+    
+    breakpoints.forEach(bp => {
+      const existingLayout = layouts[bp] || defaultLayouts[bp] || []
+      const colCount = cols[bp]
+      
+      // Get appropriate size for this breakpoint
+      let w, h
+      const baseHeight = widgetType.defaultSize?.h || 5
+      
+      if (bp === 'xxs') {
+        w = 2
+        h = Math.ceil(baseHeight * 1.2)
+      } else if (bp === 'xs') {
+        w = 4
+        h = Math.ceil(baseHeight * 1.1)
+      } else if (bp === 'sm') {
+        w = Math.min(widgetType.defaultSize?.w || 3, 3)
+        h = baseHeight
+      } else if (bp === 'md') {
+        w = Math.min(widgetType.defaultSize?.w || 4, 3)
+        h = baseHeight
+      } else {
+        w = Math.min(widgetType.defaultSize?.w || 4, 4)
+        h = baseHeight
+      }
+      
+      const minHeight = widgetType.responsiveMinSize?.[bp]?.h || widgetType.minSize?.h || 3
+      h = Math.max(h, minHeight)
+      w = Math.min(w, colCount)
+      
+      // Find next available position
+      const position = findNextAvailablePosition(existingLayout, colCount, w, h)
+      
+      // Add new widget layout to existing layouts
+      newLayouts[bp] = [
+        ...existingLayout,
+        {
+          i: newWidgetId,
+          x: position.x,
+          y: position.y,
+          w: w,
+          h: h,
+          minW: widgetType.responsiveMinSize?.[bp]?.w || widgetType.minSize?.w || 2,
+          minH: widgetType.responsiveMinSize?.[bp]?.h || widgetType.minSize?.h || 3,
+          maxW: colCount
+        }
+      ]
+    })
+    
     setLayouts(newLayouts)
   }
 
@@ -514,8 +562,16 @@ function App() {
     const updatedWidgets = widgets.filter(w => w.id !== widgetId)
     setWidgets(updatedWidgets)
     
-    // Rebuild layouts without the removed widget
-    const newLayouts = rebuildLayouts(updatedWidgets)
+    // Remove widget from layouts without rebuilding everything
+    const newLayouts = {}
+    const breakpoints = ['xl', 'lg', 'md', 'sm', 'xs', 'xxs']
+    
+    breakpoints.forEach(bp => {
+      const existingLayout = layouts[bp] || defaultLayouts[bp] || []
+      // Filter out the removed widget's layout
+      newLayouts[bp] = existingLayout.filter(item => item.i !== widgetId)
+    })
+    
     setLayouts(newLayouts)
   }
 
@@ -643,6 +699,7 @@ function App() {
             {showSettings && (
               <SettingsPanel
                 onClose={() => setShowSettings(false)}
+                initialTab={settingsTab}
               />
             )}
           </AnimatePresence>

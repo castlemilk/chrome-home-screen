@@ -58,9 +58,23 @@ body.image-background {
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
+  background-repeat: no-repeat;
   z-index: -2;
   opacity: 0;
   transition: opacity 0.5s ease-in-out;
+  /* Improve image rendering quality */
+  image-rendering: -webkit-optimize-contrast; /* Safari */
+  image-rendering: crisp-edges; /* Chromium-based browsers and Safari */
+  image-rendering: high-quality; /* General fallback */
+  -ms-interpolation-mode: bicubic; /* IE */
+  /* Force hardware acceleration for smoother rendering */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: opacity;
+  /* Prevent blurring on scaled images */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  -webkit-font-smoothing: subpixel-antialiased;
 }
 
 .background-layer.loaded {
@@ -547,6 +561,9 @@ body.image-background {
   align-items: center;
   margin-bottom: 1rem;
   gap: 1rem;
+  position: relative;
+  z-index: 100; /* Ensure header stays above drag operations */
+  pointer-events: all; /* Ensure buttons remain clickable during drag */
 }
 
 .widget-title {
@@ -594,6 +611,9 @@ body.image-background {
   justify-content: center;
   border-radius: 4px;
   transition: all 0.2s ease;
+  position: relative;
+  z-index: 101; /* Above everything including drag */
+  pointer-events: all;
 }
 
 .widget-action-btn:hover {
@@ -778,6 +798,61 @@ body.image-background {
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
+/* Widget added state */
+.widget-option-card.widget-added {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.3);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.widget-option-card.widget-added:hover {
+  transform: none;
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+/* Widget just added animation */
+.widget-option-card.widget-just-added {
+  animation: widgetAddedPulse 0.6s ease-out;
+}
+
+@keyframes widgetAddedPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.3), 0 10px 30px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* Widget added badge */
+.widget-added-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: rgba(34, 197, 94, 0.9);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.widget-option-card {
+  position: relative;
+}
+
+/* Widget option add button states */
+.widget-option-add.added {
+  background: rgba(34, 197, 94, 0.2) !important;
+  color: rgba(34, 197, 94, 1);
+}
+
 .widget-option-icon {
   font-size: 2.5rem;
   filter: saturate(0.8);
@@ -801,6 +876,31 @@ body.image-background {
   color: rgba(255, 255, 255, 0.95);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   font-weight: 400;
+}
+
+/* Dark scrollbar for all widget content */
+.widget-content::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.widget-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.widget-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+.widget-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.widget-content {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) rgba(0, 0, 0, 0.2);
 }
 
 .widget-config-content {
@@ -903,6 +1003,58 @@ body.image-background {
   border-radius: 20px;
   color: white;
   box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+/* Custom scrollbar for weather widget - dark theme */
+.weather-widget::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.weather-widget::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.weather-widget::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  background-clip: padding-box;
+}
+
+.weather-widget::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+  background-clip: padding-box;
+}
+
+/* Apply same dark scrollbar to widget-content containing weather widget */
+.widget-content:has(.weather-widget)::-webkit-scrollbar {
+  width: 8px;
+}
+
+.widget-content:has(.weather-widget)::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.widget-content:has(.weather-widget)::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  background-clip: padding-box;
+}
+
+.widget-content:has(.weather-widget)::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+  background-clip: padding-box;
+}
+
+.widget-content:has(.weather-widget) {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) rgba(0, 0, 0, 0.2);
 }
 
 .weather-loading,
@@ -1058,33 +1210,27 @@ body.image-background {
 .weather-hourly-scroll {
   overflow-x: auto;
   overflow-y: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  scrollbar-width: none; /* Hide scrollbar for Firefox */
   -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
   padding: 0 0.5rem;
   width: 100%;
   box-sizing: border-box;
+  scroll-behavior: smooth;
 }
 
+/* Hide scrollbar for Chrome, Safari and Opera */
 .weather-hourly-scroll::-webkit-scrollbar {
-  height: 4px;
+  display: none;
 }
 
-.weather-hourly-scroll::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 2px;
-}
-
-.weather-hourly-scroll::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 2px;
-}
-
+/* Ensure the hourly container allows scrolling */
 .weather-hourly {
   display: flex;
   gap: 0.5rem;
   padding-bottom: 0.75rem;
-  width: max-content;
+  min-width: min-content; /* Ensures content doesn't shrink */
+  width: max-content; /* Allows horizontal scrolling */
 }
 
 .hourly-item {
@@ -1201,17 +1347,26 @@ body.image-background {
 }
 
 .weather-daily-container::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
 }
 
 .weather-daily-container::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
 }
 
 .weather-daily-container::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+.weather-daily-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.weather-daily-container {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) rgba(0, 0, 0, 0.2);
 }
 
 .weather-daily {
@@ -1563,6 +1718,30 @@ body.image-background {
   transition: all 0.2s ease;
 }
 
+/* Draggable stock items */
+.stock-symbol-item.draggable,
+.stock-item.draggable {
+  cursor: grab;
+}
+
+.stock-symbol-item.draggable:active,
+.stock-item.draggable:active {
+  cursor: grabbing;
+}
+
+/* Drag states for stock items */
+.stock-ghost {
+  opacity: 0.4;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.stock-drag {
+  opacity: 1;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  transform: rotate(1deg);
+  cursor: grabbing;
+}
+
 .stock-remove-btn:hover {
   background: rgba(248, 113, 113, 0.2);
   color: #f87171;
@@ -1806,6 +1985,53 @@ body.image-background {
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
 }
 
+/* Drag handle for clock items */
+.clock-drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  color: rgba(255, 255, 255, 0.3);
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  margin-right: 0.5rem;
+  opacity: 0;
+}
+
+.clock-item:hover .clock-drag-handle {
+  opacity: 1;
+}
+
+.clock-drag-handle:hover {
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.clock-drag-handle:active {
+  cursor: grabbing;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Drag states for clock items */
+.clock-ghost {
+  opacity: 0.4;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.clock-drag {
+  opacity: 1;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  transform: rotate(1deg);
+}
+
+.clock-list-sortable {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 .clock-city {
   font-weight: 600;
   font-size: 1.05rem;
@@ -1988,9 +2214,9 @@ body.image-background {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  background: rgba(0, 0, 0, 0.3); /* More transparent to show background */
+  backdrop-filter: blur(8px) saturate(120%); /* Less blur to show background better */
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1999,10 +2225,10 @@ body.image-background {
 }
 
 .settings-container {
-  background: rgba(15, 15, 15, 0.85);
-  backdrop-filter: blur(40px) saturate(200%);
-  -webkit-backdrop-filter: blur(40px) saturate(200%);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(15, 15, 15, 0.5); /* More transparent for better preview */
+  backdrop-filter: blur(20px) saturate(150%); /* Reduced blur for clearer view */
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 20px;
   width: 90%;
   max-width: 800px;
@@ -2010,13 +2236,13 @@ body.image-background {
   display: flex;
   flex-direction: column;
   box-shadow: 
-    0 25px 80px rgba(0, 0, 0, 0.5),
-    0 10px 30px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
+    0 25px 80px rgba(0, 0, 0, 0.3), /* Lighter shadow */
+    0 10px 30px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
   background-image: 
-    radial-gradient(ellipse at top, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse at bottom, rgba(255, 255, 255, 0.04) 0%, transparent 50%);
+    radial-gradient(ellipse at top, rgba(255, 255, 255, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom, rgba(255, 255, 255, 0.03) 0%, transparent 50%);
 }
 
 .settings-header {
@@ -2212,6 +2438,78 @@ body.image-background {
   color: rgba(255, 255, 255, 0.7);
   text-align: center;
   display: block;
+}
+
+/* JWST Image Metadata Tooltip */
+.jwst-image-option {
+  position: relative;
+}
+
+.jwst-metadata-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  background: rgba(10, 10, 15, 0.98);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 1rem;
+  min-width: 280px;
+  max-width: 320px;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  pointer-events: none;
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.jwst-image-option:hover .jwst-metadata-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-5px);
+}
+
+.jwst-metadata-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 8px solid transparent;
+  border-top-color: rgba(10, 10, 15, 0.98);
+}
+
+.jwst-metadata-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.jwst-metadata-description {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 0.75rem;
+}
+
+.jwst-metadata-info {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 0.25rem;
+}
+
+.jwst-metadata-info strong {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+}
+
+.jwst-metadata-info:last-child {
+  margin-bottom: 0;
 }
 
 .config-help {
@@ -2657,10 +2955,11 @@ body.image-background {
   position: absolute;
   top: 0;
   right: 0;
-  z-index: 30;
+  z-index: 100; /* Higher than drag operations */
   background: transparent;
   margin-bottom: 0;
   padding: 0.75rem;
+  pointer-events: all; /* Ensure buttons remain clickable during drag */
 }
 
 .grid-item.widget-item .widget-actions {
@@ -3208,6 +3507,162 @@ body.image-background {
 .todo-delete:hover {
   color: rgba(239, 68, 68, 0.8);
   background: rgba(239, 68, 68, 0.1);
+}
+
+/* Drag handle for todo items */
+.todo-drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  color: rgba(255, 255, 255, 0.3);
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  opacity: 0;
+}
+
+.todo-item:hover .todo-drag-handle {
+  opacity: 1;
+}
+
+.todo-drag-handle:hover {
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.todo-drag-handle:active {
+  cursor: grabbing;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Drag states for todo items */
+.todo-ghost {
+  opacity: 0.4;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.todo-drag {
+  opacity: 1;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  transform: rotate(2deg);
+}
+
+/* Google Apps Widget */
+.google-apps-widget {
+  padding: 1rem;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.google-apps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  padding: 0.5rem;
+}
+
+.google-app-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 0.5rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  min-height: 90px;
+}
+
+.google-app-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.google-app-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.5rem;
+}
+
+.google-app-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.google-app-name {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+  line-height: 1.2;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.google-app-item.hovered .google-app-name {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* Responsive grid for smaller widgets */
+@container widget-grid (max-width: 300px) {
+  .google-apps-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.4rem;
+  }
+  
+  .google-app-item {
+    padding: 0.75rem 0.4rem;
+    min-height: 80px;
+  }
+  
+  .google-app-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .google-app-name {
+    font-size: 0.7rem;
+  }
+}
+
+/* Custom scrollbar for Google Apps widget */
+.google-apps-widget::-webkit-scrollbar {
+  width: 6px;
+}
+
+.google-apps-widget::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.google-apps-widget::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+.google-apps-widget::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.google-apps-widget {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) rgba(0, 0, 0, 0.2);
 }
 
 /* Drag Handle */

@@ -2,10 +2,10 @@
   "manifest_version": 3,
   "name": "Chrome Home - Beautiful New Tab",
   "short_name": "Chrome Home",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Beautiful new tab page with customizable widgets and NASA space backgrounds",
   "author": "Ben Ebsworth",
-  "homepage_url": "https://github.com/yourusername/chrome-home-extension",
+  "homepage_url": "https://github.com/castlemilk/chrome-home-extension",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
@@ -13,6 +13,7 @@
   },
   "action": {
     "default_title": "Chrome Home Extension",
+    "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",
@@ -33,9 +34,7 @@
   "host_permissions": [
     "https://query1.finance.yahoo.com/*",
     "https://query2.finance.yahoo.com/*",
-    "https://wttr.in/*",
-    "https://geocoding-api.open-meteo.com/*",
-    "http://localhost:8080/*"
+    "https://weather-service-fws6uj4tlq-uc.a.run.app/*"
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { ReactSortable } from 'react-sortablejs'
 import { ParentSize } from '@visx/responsive'
 import { LinePath, AreaClosed, Line } from '@visx/shape'
 import { curveMonotoneX } from '@visx/curve'
@@ -563,9 +564,19 @@ const StockWidget = ({ config, onConfigUpdate, isConfigMode }) => {
       <div className="widget-config-content">
         <div className="config-group">
           <label className="config-label">Stock Symbols</label>
-          <div className="stock-symbols-list">
-            {config.symbols.map((symbol) => (
-              <div key={symbol} className="stock-symbol-item">
+          <ReactSortable
+            list={config.symbols.map((symbol, idx) => ({ id: `${symbol}-${idx}`, symbol }))}
+            setList={(newList) => {
+              const reordered = newList.map(item => item.symbol)
+              onConfigUpdate({ ...config, symbols: reordered })
+            }}
+            animation={200}
+            className="stock-symbols-list"
+            ghostClass="stock-ghost"
+            dragClass="stock-drag"
+          >
+            {config.symbols.map((symbol, idx) => (
+              <div key={`${symbol}-${idx}`} className="stock-symbol-item draggable" data-id={`${symbol}-${idx}`}>
                 <span>{symbol}</span>
                 <button
                   className="stock-remove-btn"
@@ -575,7 +586,7 @@ const StockWidget = ({ config, onConfigUpdate, isConfigMode }) => {
                 </button>
               </div>
             ))}
-          </div>
+          </ReactSortable>
           <div className="stock-search-container">
             <input
               type="text"
@@ -648,11 +659,22 @@ const StockWidget = ({ config, onConfigUpdate, isConfigMode }) => {
           </button>
         ))}
       </div>
-      <div className="stock-list">
-        {stocks.map((stock) => {
+      <ReactSortable
+        list={stocks.map((stock, idx) => ({ ...stock, id: `${stock.symbol}-${idx}` }))}
+        setList={(newList) => {
+          // Reorder config.symbols to match new order
+          const reorderedSymbols = newList.map(item => item.symbol)
+          onConfigUpdate({ ...config, symbols: reorderedSymbols })
+        }}
+        animation={200}
+        className="stock-list"
+        ghostClass="stock-ghost"
+        dragClass="stock-drag"
+      >
+        {stocks.map((stock, idx) => {
           if (stock.error) {
             return (
-              <div key={stock.symbol} className="stock-item error">
+              <div key={`${stock.symbol}-${idx}`} className="stock-item error draggable" data-id={`${stock.symbol}-${idx}`}>
                 <div className="stock-info">
                   <div className="stock-symbol">{stock.symbol}</div>
                   <div className="stock-error">Unable to load</div>
@@ -665,7 +687,7 @@ const StockWidget = ({ config, onConfigUpdate, isConfigMode }) => {
           const isNegative = stock.change < 0
           
           return (
-            <div key={stock.symbol} className="stock-item">
+            <div key={`${stock.symbol}-${idx}`} className="stock-item draggable" data-id={`${stock.symbol}-${idx}`}>
               <div className="stock-main">
                 <div className="stock-info">
                   <div className="stock-symbol">{stock.symbol}</div>
@@ -702,7 +724,7 @@ const StockWidget = ({ config, onConfigUpdate, isConfigMode }) => {
             </div>
           )
         })}
-      </div>
+      </ReactSortable>
     </div>
   )
 }

@@ -10,6 +10,7 @@ const BackgroundSelector = () => {
   // Load background image
   useEffect(() => {
     loadBackground()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.background, settings.backgroundType, settings.backgroundUrl])
   
   const loadBackground = async () => {
@@ -27,8 +28,12 @@ const BackgroundSelector = () => {
         if (manifest) {
           const image = manifest.images.find(img => img.id === settings.background)
           if (image) {
-            // Use preview size in WebP format for best balance
-            const variant = image.variants.find(v => v.size === 'preview' && v.format === 'webp')
+            // Use full size in WebP format for best quality
+            // Try to get full size first, then fallback to smaller sizes
+            const variant = image.variants.find(v => v.size === 'full' && v.format === 'webp')
+              || image.variants.find(v => v.size === 'large' && v.format === 'webp')
+              || image.variants.find(v => v.size === 'full')
+              || image.variants.find(v => v.size === 'large')
               || image.variants.find(v => v.size === 'preview')
               || image.variants[0]
             

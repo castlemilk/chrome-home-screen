@@ -130,4 +130,109 @@ tag: ## Create git tag for current version
 	echo "📤 To push:"; \
 	echo "   git push && git push --tags"
 
+verify-icons: ## Verify all icons are valid PNG files
+	@echo "🔍 Verifying icon files..."
+	@if [ ! -f dist/icons/icon16.png ]; then echo "❌ icon16.png missing"; exit 1; fi
+	@if [ ! -f dist/icons/icon48.png ]; then echo "❌ icon48.png missing"; exit 1; fi
+	@if [ ! -f dist/icons/icon128.png ]; then echo "❌ icon128.png missing"; exit 1; fi
+	@echo "Checking file types..."
+	@file dist/icons/icon16.png | grep -q "PNG image" || (echo "❌ icon16.png is not a PNG"; exit 1)
+	@file dist/icons/icon48.png | grep -q "PNG image" || (echo "❌ icon48.png is not a PNG"; exit 1)
+	@file dist/icons/icon128.png | grep -q "PNG image" || (echo "❌ icon128.png is not a PNG"; exit 1)
+	@echo "Checking dimensions..."
+	@sips -g pixelWidth -g pixelHeight dist/icons/icon16.png 2>&1 | grep -q "pixelWidth: 16" || (echo "❌ icon16.png wrong size"; exit 1)
+	@sips -g pixelWidth -g pixelHeight dist/icons/icon48.png 2>&1 | grep -q "pixelWidth: 48" || (echo "❌ icon48.png wrong size"; exit 1)
+	@sips -g pixelWidth -g pixelHeight dist/icons/icon128.png 2>&1 | grep -q "pixelWidth: 128" || (echo "❌ icon128.png wrong size"; exit 1)
+	@echo "Checking manifest references..."
+	@grep -q "icon16.png" dist/manifest.json || (echo "❌ manifest doesn't reference icon16.png"; exit 1)
+	@grep -q "icon48.png" dist/manifest.json || (echo "❌ manifest doesn't reference icon48.png"; exit 1)
+	@grep -q "icon128.png" dist/manifest.json || (echo "❌ manifest doesn't reference icon128.png"; exit 1)
+	@if grep -q "\.svg" dist/manifest.json; then echo "⚠️  Warning: manifest still references .svg files"; exit 1; fi
+	@echo "✅ All icon checks passed!"
+
+test-install: build verify-icons ## Test installation from ZIP (mimics Chrome Web Store)
+	@echo ""
+	@echo "🧪 Testing installation process..."
+	@echo ""
+	@echo "Creating test installation..."
+	@rm -rf /tmp/chrome-home-test
+	@mkdir -p /tmp/chrome-home-test
+	@cd dist && cp -r . /tmp/chrome-home-test/
+	@echo "✅ Test package created at: /tmp/chrome-home-test"
+	@echo ""
+	@echo "📦 To test in Chrome:"
+	@echo "   1. Go to: chrome://extensions/"
+	@echo "   2. Enable 'Developer mode'"
+	@echo "   3. Click 'Load unpacked'"
+	@echo "   4. Select: /tmp/chrome-home-test"
+	@echo "   5. Verify extension loads without errors"
+	@echo ""
+	@echo "🧹 To clean up after testing:"
+	@echo "   rm -rf /tmp/chrome-home-test"
+
+pack-extension: build verify-icons ## Create packed extension (.crx) for testing
+	@echo ""
+	@echo "📦 To create a packed extension (.crx):"
+	@echo ""
+	@echo "   1. Go to: chrome://extensions/"
+	@echo "   2. Enable 'Developer mode'"
+	@echo "   3. Click 'Pack extension'"
+	@echo "   4. Root directory: $(CURDIR)/dist"
+	@echo "   5. Private key: (leave empty)"
+	@echo "   6. Click 'Pack Extension'"
+	@echo ""
+	@echo "   This will create: dist.crx and dist.pem"
+	@echo ""
+	@echo "📥 To install the packed extension:"
+	@echo "   - Drag dist.crx into chrome://extensions/"
+	@echo ""
+	@echo "⚠️  Note: Packed extensions catch issues that 'Load unpacked' misses!"
+
+test-package: clean build verify-icons ## Full package test (comprehensive)
+	@echo ""
+	@echo "🧪 Running comprehensive package tests..."
+	@echo ""
+	@echo "✅ Build successful"
+	@echo "✅ Icons verified"
+	@echo ""
+	@echo "Checking package contents..."
+	@test -f dist/manifest.json || (echo "❌ manifest.json missing"; exit 1)
+	@test -f dist/index.html || (echo "❌ index.html missing"; exit 1)
+	@test -f dist/background.js || (echo "❌ background.js missing"; exit 1)
+	@test -d dist/assets || (echo "❌ assets directory missing"; exit 1)
+	@echo "✅ Required files present"
+	@echo ""
+	@echo "Checking manifest validity..."
+	@node scripts/validate-manifest.js
+	@echo ""
+	@echo "Creating test package..."
+	@rm -f test-$(PACKAGE_NAME)
+	@cd dist && zip -rq ../test-$(PACKAGE_NAME) . -x "*.DS_Store"
+	@echo "✅ Test package created: test-$(PACKAGE_NAME)"
+	@ls -lh test-$(PACKAGE_NAME)
+	@echo ""
+	@echo "🎉 All tests passed! Ready for release."
+	@echo ""
+	@echo "Next steps:"
+	@echo "   1. Test packed extension: make pack-extension"
+	@echo "   2. If all good, create release: make release"
+	@rm -f test-$(PACKAGE_NAME)
+
+pre-release: test-package ## Pre-release checks before publishing
+	@echo ""
+	@echo "📋 Pre-release checklist:"
+	@echo "   ✅ Build successful"
+	@echo "   ✅ Icons verified (PNG format)"
+	@echo "   ✅ Manifest valid"
+	@echo "   ✅ Package created"
+	@echo ""
+	@echo "⚠️  Manual checks required:"
+	@echo "   [ ] Test packed extension (make pack-extension)"
+	@echo "   [ ] Test in fresh Chrome profile"
+	@echo "   [ ] All features working"
+	@echo "   [ ] No console errors"
+	@echo "   [ ] Version number correct"
+	@echo ""
+	@echo "When ready: make release"
+
 .DEFAULT_GOAL := help

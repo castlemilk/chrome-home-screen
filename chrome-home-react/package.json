@@ -1,7 +1,7 @@
 {
   "name": "chrome-home-extension",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "description": "A beautiful, customizable Chrome new tab extension with widgets",
   "author": "Ben Ebsworth",

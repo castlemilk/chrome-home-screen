@@ -93,16 +93,22 @@ const GoogleWeatherWidget = ({ config, onConfigUpdate, isConfigMode }) => {
     setExpandedView(newExpandedView)
     saveUIState({ expandedView: newExpandedView })
   }
-  // Handle horizontal scroll with mouse wheel
+  // Handle horizontal scroll with mouse wheel - works anywhere in the hourly forecast
   useEffect(() => {
     const scrollContainer = hourlyScrollRef.current
     if (!scrollContainer) return
     
     const handleWheel = (e) => {
-      // Only handle horizontal scrolling if not clicking
-      if (e.deltaY !== 0 && !e.target.closest('.hourly-item')) {
-        e.preventDefault()
-        scrollContainer.scrollLeft += e.deltaY
+      // Convert vertical scroll to horizontal scroll
+      // Only if there's actual horizontal scroll available
+      if (e.deltaY !== 0) {
+        const hasHorizontalScroll = scrollContainer.scrollWidth > scrollContainer.clientWidth
+        
+        if (hasHorizontalScroll) {
+          e.preventDefault()
+          // Smooth scroll with momentum
+          scrollContainer.scrollLeft += e.deltaY
+        }
       }
     }
     
@@ -594,6 +600,54 @@ const GoogleWeatherWidget = ({ config, onConfigUpdate, isConfigMode }) => {
     setLastRefresh(new Date())
   }
 
+  // Initialize location on first load
+  useEffect(() => {
+    // If no location is set at all, try to get user's location or default to NYC
+    if (!config.location && !config.lat && !config.lon) {
+      // Try to get user's current location
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          // Success callback
+          (position) => {
+            onConfigUpdate({
+              ...config,
+              location: 'Current Location',
+              lat: position.coords.latitude,
+              lon: position.coords.longitude
+            })
+          },
+          // Error callback - user denied or geolocation failed
+          (error) => {
+            console.log('Geolocation not available, defaulting to New York:', error.message)
+            // Default to New York City
+            onConfigUpdate({
+              ...config,
+              location: 'New York',
+              lat: 40.7128,
+              lon: -74.0060
+            })
+          },
+          // Options
+          {
+            enableHighAccuracy: false,
+            timeout: 5000,
+            maximumAge: 0
+          }
+        )
+      } else {
+        // Geolocation not supported, default to NYC
+        console.log('Geolocation not supported, defaulting to New York')
+        onConfigUpdate({
+          ...config,
+          location: 'New York',
+          lat: 40.7128,
+          lon: -74.0060
+        })
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Run only once on mount
+
   useEffect(() => {
     // Only fetch weather if we have coordinates
     if (config.lat && config.lon) {
@@ -603,6 +657,7 @@ const GoogleWeatherWidget = ({ config, onConfigUpdate, isConfigMode }) => {
       // Only try to geocode if we have a location but no coordinates
       fetchWeather()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config.lat, config.lon, config.location])
 
   if (isConfigMode) {

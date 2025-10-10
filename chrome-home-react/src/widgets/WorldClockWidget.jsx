@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Plus, X, ChevronLeft, ChevronRight, Globe } from 'lucide-react'
+import { Plus, X, ChevronLeft, ChevronRight, Globe, GripVertical } from 'lucide-react'
+import { ReactSortable } from 'react-sortablejs'
 
 const WorldClockWidget = ({ config, onConfigUpdate, isConfigMode }) => {
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -284,8 +285,7 @@ const WorldClockWidget = ({ config, onConfigUpdate, isConfigMode }) => {
       }
       
       return { time, date: dateStr }
-    } catch (error) {
-      console.error('Error formatting time:', error)
+    } catch {
       return { time: '--:--', date: '' }
     }
   }
@@ -298,7 +298,7 @@ const WorldClockWidget = ({ config, onConfigUpdate, isConfigMode }) => {
       const tzDate = new Date(now.toLocaleString('en-US', { timeZone: timezone }))
       const offset = (tzDate - utcDate) / (60 * 60 * 1000)
       return offset >= 0 ? `+${offset}` : `${offset}`
-    } catch (error) {
+    } catch {
       return ''
     }
   }
@@ -522,27 +522,44 @@ const WorldClockWidget = ({ config, onConfigUpdate, isConfigMode }) => {
             <p className="clock-empty-hint">Configure in settings</p>
           </div>
         ) : (
-          clocks.map((clock, index) => {
-            const { time, date } = formatTime(clock.timezone)
-            const currentOffset = getCurrentOffset(clock.timezone)
-            return (
-              <div key={index} className="clock-item">
-                <div className="clock-info">
-                  <div className="clock-city-row">
-                    <span className="clock-city">{clock.city}</span>
-                    <span className="clock-gmt">GMT{currentOffset || clock.offset}</span>
+          <ReactSortable
+            list={clocks.map((clock, index) => ({ ...clock, id: `${clock.timezone}-${index}` }))}
+            setList={(newList) => {
+              // eslint-disable-next-line no-unused-vars
+              const reordered = newList.map(({ id, ...clock }) => clock)
+              onConfigUpdate({ ...config, clocks: reordered })
+            }}
+            animation={200}
+            handle=".clock-drag-handle"
+            className="clock-list-sortable"
+            ghostClass="clock-ghost"
+            dragClass="clock-drag"
+          >
+            {clocks.map((clock, index) => {
+              const { time, date } = formatTime(clock.timezone)
+              const currentOffset = getCurrentOffset(clock.timezone)
+              return (
+                <div key={`${clock.timezone}-${index}`} className="clock-item" data-id={`${clock.timezone}-${index}`}>
+                  <div className="clock-drag-handle" title="Drag to reorder">
+                    <GripVertical size={14} />
                   </div>
-                  {displayFormat.showDate && date && (
-                    <div className="clock-date">{date}</div>
-                  )}
-                  {displayFormat.showTimezone && (
-                    <div className="clock-timezone-code">{clock.timezone.split('/').pop()}</div>
-                  )}
+                  <div className="clock-info">
+                    <div className="clock-city-row">
+                      <span className="clock-city">{clock.city}</span>
+                      <span className="clock-gmt">GMT{currentOffset || clock.offset}</span>
+                    </div>
+                    {displayFormat.showDate && date && (
+                      <div className="clock-date">{date}</div>
+                    )}
+                    {displayFormat.showTimezone && (
+                      <div className="clock-timezone-code">{clock.timezone.split('/').pop()}</div>
+                    )}
+                  </div>
+                  <div className="clock-time">{time}</div>
                 </div>
-                <div className="clock-time">{time}</div>
-              </div>
-            )
-          })
+              )
+            })}
+          </ReactSortable>
         )}
       </div>
     </div>

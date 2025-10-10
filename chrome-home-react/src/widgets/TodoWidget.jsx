@@ -1,13 +1,38 @@
-import { useState } from 'react'
-import { Plus, Check, X } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Plus, Check, X, GripVertical } from 'lucide-react'
+import { storage } from '../utils/storage'
+import { ReactSortable } from 'react-sortablejs'
 
-const TodoWidget = ({ config, onConfigUpdate, isConfigMode }) => {
-  const [todos, setTodos] = useState([
-    { id: 1, text: 'Review project updates', completed: false },
-    { id: 2, text: 'Prepare for meeting', completed: true },
-    { id: 3, text: 'Update documentation', completed: false }
-  ])
+const TodoWidget = ({ isConfigMode }) => {
+  const [todos, setTodos] = useState([])
   const [newTodo, setNewTodo] = useState('')
+  const [isLoaded, setIsLoaded] = useState(false)
+  
+  // Load todos from storage on mount
+  useEffect(() => {
+    storage.sync.get(['todos'], (result) => {
+      if (result.todos && result.todos.length > 0) {
+        setTodos(result.todos)
+      } else {
+        // Set default todos if none exist
+        const defaultTodos = [
+          { id: 1, text: 'Review project updates', completed: false },
+          { id: 2, text: 'Prepare for meeting', completed: true },
+          { id: 3, text: 'Update documentation', completed: false }
+        ]
+        setTodos(defaultTodos)
+        storage.sync.set({ todos: defaultTodos })
+      }
+      setIsLoaded(true)
+    })
+  }, [])
+  
+  // Save todos to storage whenever they change
+  useEffect(() => {
+    if (isLoaded && todos.length >= 0) {
+      storage.sync.set({ todos })
+    }
+  }, [todos, isLoaded])
 
   const addTodo = () => {
     if (newTodo.trim()) {
@@ -56,9 +81,20 @@ const TodoWidget = ({ config, onConfigUpdate, isConfigMode }) => {
         </button>
       </div>
 
-      <div className="todo-list">
+      <ReactSortable 
+        list={todos} 
+        setList={setTodos}
+        animation={200}
+        handle=".todo-drag-handle"
+        className="todo-list"
+        ghostClass="todo-ghost"
+        dragClass="todo-drag"
+      >
         {todos.map(todo => (
           <div key={todo.id} className={`todo-item ${todo.completed ? 'completed' : ''}`}>
+            <div className="todo-drag-handle" title="Drag to reorder">
+              <GripVertical size={14} />
+            </div>
             <button 
               className="todo-check"
               onClick={() => toggleTodo(todo.id)}
@@ -74,7 +110,7 @@ const TodoWidget = ({ config, onConfigUpdate, isConfigMode }) => {
             </button>
           </div>
         ))}
-      </div>
+      </ReactSortable>
     </div>
   )
 }
